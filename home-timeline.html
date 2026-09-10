@@ -1,0 +1,507 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>내집마련 타임라인</title>
+<style>
+:root {
+  --bg-color: #f7fafc; --card-bg: #ffffff;
+  --primary-color: #2c5282; --primary-light: #ebf8ff;
+  --text-color: #2d3748; --text-muted: #718096;
+  --border-color: #e2e8f0; --accent-color: #dd6b20;
+  --accent-light: #fffaf0; --wife-color: #b7791f;
+  --husband-color: #4c51bf; --success-color: #319795;
+  --completed-bg: #e6fffa; --completed-text: #234e52;
+  --pending-bg: #fffaf0; --pending-text: #7b341e;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Segoe UI", "Malgun Gothic", "맑은 고딕", Roboto, "Noto Sans KR", "Nanum Gothic", sans-serif; }
+body { background-color: var(--bg-color); color: var(--text-color); padding: 12px; font-size: 14px; line-height: 1.5; max-width: 600px; margin: 0 auto; }
+.header { text-align: center; padding: 20px 0; background: linear-gradient(135deg, #1a365d 0%, #2b6cb0 100%); color: white; border-radius: 12px; margin-bottom: 16px; }
+.header h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.header p { font-size: 11px; opacity: 0.8; }
+.card { background-color: var(--card-bg); border-radius: 12px; padding: 16px; margin-bottom: 16px; border: 1px solid var(--border-color); box-shadow: 0 1px 3px rgba(0,0,0,0.05); }
+.card-title { font-size: 15px; font-weight: 700; color: var(--primary-color); margin-bottom: 12px; }
+.sub-title { font-size: 13px; font-weight: 700; margin-top: 10px; margin-bottom: 6px; padding-left: 4px; border-left: 3px solid var(--primary-color); }
+.wife-title { border-left-color: var(--wife-color); color: var(--wife-color); }
+.husband-title { border-left-color: var(--husband-color); color: var(--husband-color); }
+.common-title { border-left-color: var(--success-color); color: var(--success-color); }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.form-group { margin-bottom: 8px; }
+.form-group.full { grid-column: span 2; }
+label { display: block; font-size: 11px; font-weight: 600; margin-bottom: 4px; color: #4a5568; }
+input, select { width: 100%; padding: 8px 10px; font-size: 13px; border: 1px solid var(--border-color); border-radius: 6px; background-color: #fafafa; color: var(--text-color); outline: none; }
+input:focus { border-color: var(--primary-color); background-color: #fff; }
+input:disabled { background-color: #edf2f7; color: #a0aec0; cursor: not-allowed; }
+.input-suffix { position: relative; }
+.input-suffix input { padding-right: 35px; }
+.input-suffix::after { content: "만원"; position: absolute; right: 10px; top: 50%; transform: translateY(-50%); font-size: 11px; color: var(--text-muted); }
+.total-box { background-color: var(--primary-light); border-radius: 8px; padding: 12px; margin-top: 10px; text-align: center; border: 1px solid #bee3f8; font-size: 13px; }
+.total-box span { font-size: 15px; font-weight: 800; color: var(--primary-color); }
+.alert-box { background-color: var(--accent-light); border: 1px dashed var(--accent-color); border-radius: 8px; padding: 12px; margin-top: 8px; margin-bottom: 12px; font-size: 12px; color: #7b341e; }
+.table-container { overflow-x: auto; margin: 0 -4px; }
+table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 100%; }
+th { background-color: #edf2f7; color: #4a5568; font-weight: 600; padding: 8px 4px; border-bottom: 2px solid var(--border-color); text-align: center; }
+td { padding: 8px 4px; border-bottom: 1px solid var(--border-color); text-align: right; vertical-align: middle; }
+td.center { text-align: center; }
+td.bold { font-weight: 700; color: var(--text-color); }
+.accordion-btn { width: 100%; background-color: #f7fafc; border: 1px solid var(--border-color); padding: 12px; text-align: left; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; justify-content: space-between; align-items: center; border-radius: 6px; margin-top: 8px; color: #4a5568; }
+.accordion-content { display: none; padding: 10px; background-color: #fff; border: 1px solid var(--border-color); border-top: none; border-radius: 0 0 6px 6px; }
+.accordion-content.show { display: block; }
+.arrow { transition: transform 0.2s; }
+.arrow.open { transform: rotate(180deg); }
+.btn-detail-toggle { background-color: var(--primary-light); color: var(--primary-color); border: 1px solid #bee3f8; padding: 4px 8px; border-radius: 4px; font-size: 11px; cursor: pointer; font-weight: bold; }
+.btn-detail-toggle:hover { background-color: #bee3f8; }
+.detail-row { display: none; background-color: #fffaf0; }
+.detail-row.show { display: table-row; }
+.detail-cell { text-align: left; padding: 12px !important; font-size: 12px; line-height: 1.6; border-bottom: 1px solid #feebc8; }
+.btn-share { display: block; width: 100%; background-color: #319795; color: white; text-align: center; padding: 12px; border-radius: 8px; text-decoration: none; font-weight: 700; font-size: 14px; border: none; cursor: pointer; margin-bottom: 20px; }
+.input-saving { width: 55px; padding: 3px 4px; font-size: 12px; text-align: right; border: 1px solid var(--border-color); border-radius: 4px; display: inline-block; }
+.summary-badge { background-color: var(--primary-color); color: white; padding: 2px 6px; border-radius: 4px; font-size: 11px; font-weight: normal; }
+.calc-flow-box { border-left: 4px solid var(--success-color); padding: 4px 8px; font-size: 12px; }
+.total-row-highlight { background-color: #f7fafc; font-weight: bold; border-top: 2px solid var(--border-color); }
+.status-btn { padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: bold; cursor: pointer; border: 1px solid; margin-left: 2px; display: inline-block; }
+.status-btn.completed { background-color: var(--completed-bg); color: var(--completed-text); border-color: #319795; }
+.status-btn.pending { background-color: var(--pending-bg); color: var(--pending-text); border-color: #dd6b20; }
+.saving-cell-container { display: flex; align-items: center; justify-content: flex-end; gap: 2px; }
+.details-text { font-size: 12px; line-height: 1.8; color: #4a5568; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>🏡 내집마련 타임라인</h1>
+  <p>아내 & 남편 맞춤형 실시간 타임라인 대시보드</p>
+</div>
+
+<!-- 1. 가용 씨드 관리 -->
+<div class="card">
+  <div class="card-title">💰 가용 씨드 (2026.07)</div>
+  <div class="sub-title wife-title">아내 자산</div>
+  <div class="grid-2">
+    <div class="form-group full">
+      <label>아내 가용 자산</label>
+      <div class="input-suffix"><input type="number" id="wifeSeed" value="6100"></div>
+    </div>
+  </div>
+  <div class="sub-title husband-title">남편 자산</div>
+  <div class="grid-2">
+    <div class="form-group full">
+      <label>남편 가용 자산</label>
+      <div class="input-suffix"><input type="number" id="husbandSeed" value="5000"></div>
+    </div>
+  </div>
+  <div class="sub-title common-title">공통 자산</div>
+  <div class="grid-2">
+    <div class="form-group full">
+      <label>부부 공통 자산</label>
+      <div class="input-suffix"><input type="number" id="commonSeed" value="3080"></div>
+    </div>
+  </div>
+  <div class="total-box">부부 합산 초기 씨드: <span id="totalSeedDisplay">0</span> 만원</div>
+</div>
+
+<!-- 2. 전세 보증금 관리 -->
+<div class="card">
+  <div class="card-title">🔑 전세 보증금</div>
+  <div class="grid-2">
+    <div class="form-group">
+      <label>아내 지분</label>
+      <div class="input-suffix"><input type="number" id="wifeJeonse" value="2310"></div>
+    </div>
+    <div class="form-group">
+      <label>남편 지분</label>
+      <div class="input-suffix"><input type="number" id="husbandJeonse" value="2310"></div>
+    </div>
+    <div class="form-group full">
+      <label>전세 보증금 총액</label>
+      <div class="input-suffix"><input type="number" id="totalJeonse" value="4620" style="font-weight: bold; color: var(--accent-color);"></div>
+    </div>
+    <div class="form-group full">
+      <label>전세 만기 및 자금 회수 시점</label>
+      <input type="text" id="jeonseDate" value="2028년 1월 30일" style="font-weight: bold; color: var(--primary-color);">
+    </div>
+  </div>
+</div>
+
+<!-- 3. 연도별 저축 예상금액 -->
+<div class="card">
+  <div class="card-title">📈 연도별 저축 예상금액</div>
+  
+  <button class="accordion-btn" onclick="toggleAccordion('acc2026', 'arrow2026')">
+    <span>📅 2026년 저축액: <span id="sumDisplay2026" style="color:var(--accent-color); font-weight:bold;">0</span>만원 <span class="summary-badge">펼쳐서 수정/보기</span></span>
+    <span class="arrow" id="arrow2026">▼</span>
+  </button>
+  <div class="accordion-content" id="acc2026">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr><th>기간</th><th>부부 합산</th><th>아내 기입</th><th>남편 기입</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="center bold">26년 4월</td><td class="bold" id="rowSum2604">300만원</td>
+            <td><div class="saving-cell-container"><input type="number" class="input-saving" id="savWife2604" value="300" disabled> 만원 <button class="status-btn completed" onclick="toggleStatus(this, 'savWife2604')">완료</button></div></td>
+            <td><div class="saving-cell-container"><input type="number" class="input-saving" id="savHusband2604" value="0" disabled> 만원 <button class="status-btn completed" onclick="toggleStatus(this, 'savHusband2604')">완료</button></div></td>
+          </tr>
+          <tr>
+            <td class="center bold">26년 6월</td><td class="bold" id="rowSum2606">200만원</td>
+            <td><div class="saving-cell-container"><input type="number" class="input-saving" id="savWife2606" value="200" disabled> 만원 <button class="status-btn completed" onclick="toggleStatus(this, 'savWife2606')">완료</button></div></td>
+            <td><div class="saving-cell-container"><input type="number" class="input-saving" id="savHusband2606" value="0" disabled> 만원 <button class="status-btn completed" onclick="toggleStatus(this, 'savHusband2606')">완료</button></div></td>
+          </tr>
+        </tbody>
+        <tbody id="tbody2026H2"></tbody>
+        <tbody>
+          <tr class="total-row-highlight">
+            <td class="center" style="color:var(--primary-color)">2026년 합계</td>
+            <td id="totalYear2026" style="color:var(--primary-color)">0만원</td>
+            <td id="totalWife2026" style="color:var(--wife-color)">0만원</td>
+            <td id="totalHusband2026" style="color:var(--husband-color)">0만원</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <button class="accordion-btn" onclick="toggleAccordion('acc2027', 'arrow2027')">
+    <span>📅 2027년 저축액: <span id="sumDisplay2027" style="color:var(--accent-color); font-weight:bold;">0</span>만원 <span class="summary-badge">펼쳐서 수정/보기</span></span>
+    <span class="arrow" id="arrow2027">▼</span>
+  </button>
+  <div class="accordion-content" id="acc2027">
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr><th>기간</th><th>부부 합산</th><th>아내 월 저축</th><th>남편 월 저축</th></tr>
+        </thead>
+        <tbody id="tbody2027"></tbody>
+        <tfoot>
+          <tr class="total-row-highlight">
+            <td class="center" style="border-top: 2px solid var(--border-color); color:var(--primary-color)">2027년 합계</td>
+            <td id="totalYear2027" style="border-top: 2px solid var(--border-color); color:var(--primary-color)">0만원</td>
+            <td id="totalWife2027" style="border-top: 2px solid var(--border-color); color:var(--wife-color)">0만원</td>
+            <td id="totalHusband2027" style="border-top: 2px solid var(--border-color); color:var(--husband-color)">0만원</td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- 4. 시뮬레이션 -->
+<div class="card">
+  <div class="card-title">📊 주택 규모별 시뮬레이션</div>
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr><th>매매가</th><th>대출 한도</th><th>필요현금</th><th>부대비용</th><th>매수 가능 시점</th><th>상세</th></tr>
+      </thead>
+      <tbody id="simTbody"></tbody>
+    </table>
+  </div>
+  <button class="accordion-btn" onclick="toggleAccordion('accDetails', 'arrowDetails')" style="margin-top:16px;">
+    <span>🔍 부대비용 (취득세 + 중개수수료) 요율 기준 보기</span>
+    <span class="arrow" id="arrowDetails">▼</span>
+  </button>
+  <div class="accordion-content" id="accDetails">
+    <div class="details-text">
+      • <strong>7억 주택:</strong> 취득세 1,066만원 + 중개수수료 308만원 = <strong>총 1,374만원</strong><br>
+      • <strong>8억 주택:</strong> 취득세 1,830만원 + 중개수수료 352만원 = <strong>총 2,182만원</strong><br>
+      • <strong>9억 주택:</strong> 취득세 2,750만원 + 중개수수료 495만원 = <strong>총 3,245만원</strong><br>
+      • <strong>10억 주택:</strong> 취득세 3,080만원 + 중개수수료 550만원 = <strong>총 3,630만원</strong>
+    </div>
+  </div>
+</div>
+
+<div class="alert-box">
+  <strong>⚠️ 생애최초 대출한도 유의사항</strong><br>
+  주택담보대출 한도는 <strong>공시가격 vs 실거래가 중 더 낮은 금액</strong>을 기준으로 산정됩니다. 보통 공시가격이 낮으므로 현금이 더 필요할 수 있습니다.
+</div>
+
+<button class="btn-share" onclick="shareToHusband()">🔗 배우자에게 대시보드 링크 공유하기</button>
+
+<script>
+let openDetailsMap = {};
+
+// 1. URL 파라미터 로드 (공유받은 경우 값 복원)
+function loadUrlParams() {
+  const p = new URLSearchParams(window.location.search);
+  if (p.has('ws')) document.getElementById('wifeSeed').value = p.get('ws');
+  if (p.has('hs')) document.getElementById('husbandSeed').value = p.get('hs');
+  if (p.has('cs')) document.getElementById('commonSeed').value = p.get('cs');
+  if (p.has('wj')) document.getElementById('wifeJeonse').value = p.get('wj');
+  if (p.has('hj')) document.getElementById('husbandJeonse').value = p.get('hj');
+  if (p.has('tj')) document.getElementById('totalJeonse').value = p.get('tj');
+  if (p.has('jd')) document.getElementById('jeonseDate').value = p.get('jd');
+}
+
+// 2. 2026년 하반기 생성
+const tbody2026H2 = document.getElementById('tbody2026H2');
+const m26 = ['7월', '8월', '9월', '10월', '11월', '12월'];
+m26.forEach((m, idx) => {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td class="center bold">26년 ${m}</td>
+    <td class="bold calc-month-sum">500만원</td>
+    <td><div class="saving-cell-container"><input type="number" class="input-saving sav-wife-26H2" id="savWife26_${idx}" value="300"> 만원 <button class="status-btn pending" onclick="toggleStatus(this, 'savWife26_${idx}')">예정</button></div></td>
+    <td><div class="saving-cell-container"><input type="number" class="input-saving sav-husband-26H2" id="savHusband26_${idx}" value="200"> 만원 <button class="status-btn pending" onclick="toggleStatus(this, 'savHusband26_${idx}')">예정</button></div></td>
+  `;
+  tbody2026H2.appendChild(tr);
+});
+
+// 3. 2027년 생성
+const tbody2027 = document.getElementById('tbody2027');
+for (let m = 1; m <= 12; m++) {
+  const tr = document.createElement('tr');
+  tr.innerHTML = `
+    <td class="center bold">27년 ${m}월</td>
+    <td class="bold calc-month-sum-27">600만원</td>
+    <td><div class="saving-cell-container"><input type="number" class="input-saving sav-wife-2027" id="savWife27_${m-1}" value="300"> 만원 <button class="status-btn pending" onclick="toggleStatus(this, 'savWife27_${m-1}')">예정</button></div></td>
+    <td><div class="saving-cell-container"><input type="number" class="input-saving sav-husband-2027" id="savHusband27_${m-1}" value="300"> 만원 <button class="status-btn pending" onclick="toggleStatus(this, 'savHusband27_${m-1}')">예정</button></div></td>
+  `;
+  tbody2027.appendChild(tr);
+}
+
+function toggleStatus(btn, inputId) {
+  const input = document.getElementById(inputId);
+  if (btn.classList.contains('pending')) {
+    btn.classList.remove('pending'); btn.classList.add('completed');
+    btn.innerText = '완료'; input.disabled = true;
+  } else {
+    btn.classList.remove('completed'); btn.classList.add('pending');
+    btn.innerText = '예정'; input.disabled = false;
+  }
+  calculateTimeline();
+}
+
+function toggleAccordion(id, arrowId) {
+  document.getElementById(id).classList.toggle('show');
+  document.getElementById(arrowId).classList.toggle('open');
+}
+
+function toggleRowDetail(price) {
+  const row = document.getElementById(`detail-row-${price}`);
+  if (row) {
+    const isShow = row.classList.toggle('show');
+    openDetailsMap[price] = isShow;
+  }
+}
+
+// 전세 지분 자동합산
+document.getElementById('wifeJeonse').addEventListener('input', updateJeonseTotal);
+document.getElementById('husbandJeonse').addEventListener('input', updateJeonseTotal);
+
+function updateJeonseTotal() {
+  const w = parseFloat(document.getElementById('wifeJeonse').value) || 0;
+  const h = parseFloat(document.getElementById('husbandJeonse').value) || 0;
+  document.getElementById('totalJeonse').value = w + h;
+  calculateTimeline();
+}
+
+function parseExpiryMonth(dateStr) {
+  const numbers = dateStr.match(/\d+/g);
+  if (!numbers || numbers.length < 2) return 18;
+
+  let year = parseInt(numbers[0]);
+  let month = parseInt(numbers[1]);
+  if (year < 100) year += 2000;
+
+  const targetTotalMonths = year * 12 + month;
+  const startTotalMonths = 2026 * 12 + 7;
+
+  const diffMonths = targetTotalMonths - startTotalMonths;
+  return diffMonths > 0 ? diffMonths : 0;
+}
+
+function calculateTimeline() {
+  // 1. 가용 씨드 계산
+  const seedWife = parseFloat(document.getElementById('wifeSeed').value) || 0;
+  const seedHusband = parseFloat(document.getElementById('husbandSeed').value) || 0;
+  const seedCommon = parseFloat(document.getElementById('commonSeed').value) || 0;
+  const initialTotalSeed = seedWife + seedHusband + seedCommon;
+  document.getElementById('totalSeedDisplay').innerText = initialTotalSeed.toLocaleString();
+
+  // 2. 2026년 저축액 합산
+  const wife2604 = parseFloat(document.getElementById('savWife2604').value) || 0;
+  const husband2604 = parseFloat(document.getElementById('savHusband2604').value) || 0;
+  const sum2604 = wife2604 + husband2604;
+  document.getElementById('rowSum2604').innerText = sum2604 + "만원";
+
+  const wife2606 = parseFloat(document.getElementById('savWife2606').value) || 0;
+  const husband2606 = parseFloat(document.getElementById('savHusband2606').value) || 0;
+  const sum2606 = wife2606 + husband2606;
+  document.getElementById('rowSum2606').innerText = sum2606 + "만원";
+
+  const inputsWife26 = document.querySelectorAll('.sav-wife-26H2');
+  const inputsHusband26 = document.querySelectorAll('.sav-husband-26H2');
+  let totalWife26Sum = wife2604 + wife2606;
+  let totalHusband26Sum = husband2604 + husband2606;
+  let sum26H2Total = 0;
+
+  const monthlySum26H2 = [];
+  inputsWife26.forEach((input, index) => {
+    const sVal = parseFloat(input.value) || 0;
+    const mVal = parseFloat(inputsHusband26[index].value) || 0;
+    const monthSum = sVal + mVal;
+    monthlySum26H2.push(monthSum);
+    input.closest('tr').querySelector('.calc-month-sum').innerText = monthSum + "만원";
+    totalWife26Sum += sVal; totalHusband26Sum += mVal; sum26H2Total += monthSum;
+  });
+
+  const total2026Earned = sum2604 + sum2606 + sum26H2Total;
+  document.getElementById('sumDisplay2026').innerText = total2026Earned.toLocaleString();
+  document.getElementById('totalYear2026').innerText = total2026Earned.toLocaleString() + "만원";
+  document.getElementById('totalWife2026').innerText = totalWife26Sum.toLocaleString() + "만원";
+  document.getElementById('totalHusband2026').innerText = totalHusband26Sum.toLocaleString() + "만원";
+
+  // 3. 2027년 저축액 합산
+  const inputsWife27 = document.querySelectorAll('.sav-wife-2027');
+  const inputsHusband27 = document.querySelectorAll('.sav-husband-2027');
+  let totalWife27Sum = 0, totalHusband27Sum = 0, total2027Earned = 0;
+  const monthlySum27 = [];
+
+  inputsWife27.forEach((input, index) => {
+    const sVal = parseFloat(input.value) || 0;
+    const mVal = parseFloat(inputsHusband27[index].value) || 0;
+    const monthSum = sVal + mVal;
+    monthlySum27.push(monthSum);
+    input.closest('tr').querySelector('.calc-month-sum-27').innerText = monthSum + "만원";
+    totalWife27Sum += sVal; totalHusband27Sum += mVal; total2027Earned += monthSum;
+  });
+  document.getElementById('sumDisplay2027').innerText = total2027Earned.toLocaleString();
+  document.getElementById('totalYear2027').innerText = total2027Earned.toLocaleString() + "만원";
+  document.getElementById('totalWife2027').innerText = totalWife27Sum.toLocaleString() + "만원";
+  document.getElementById('totalHusband2027').innerText = totalHusband27Sum.toLocaleString() + "만원";
+
+  // 4. 전세 보증금 정보
+  const jeonseAmt = parseFloat(document.getElementById('totalJeonse').value) || 0;
+  const jeonseDateStr = document.getElementById('jeonseDate').value || '만기일';
+  const expiryMonth = parseExpiryMonth(jeonseDateStr);
+
+  // 5. 시뮬레이션 계산
+  const targetData = [
+    { price: 70000, loan: 49000, cash: 21000, extra: 1374 },
+    { price: 80000, loan: 56000, cash: 24000, extra: 2182 },
+    { price: 90000, loan: 60000, cash: 30000, extra: 3245 },
+    { price: 100000, loan: 60000, cash: 40000, extra: 3630 }
+  ];
+
+  const simTbody = document.getElementById('simTbody');
+  simTbody.innerHTML = '';
+
+  targetData.forEach(item => {
+    const totalRequired = item.cash + item.extra;
+    // 2026.07 초기 씨드 기준
+    let currentAsset = initialTotalSeed;
+    let months = 0, jeonseAdded = false;
+    let savedIn26 = 0, savedIn27 = 0, savedIn28 = 0, savedIn29 = 0;
+    let final28Month = 0, final29Month = 0;
+
+    const lastMonthRate27 = monthlySum27[monthlySum27.length - 1] || 600;
+
+    if (months >= expiryMonth && !jeonseAdded) {
+      currentAsset += jeonseAmt;
+      jeonseAdded = true;
+    }
+
+    while ((currentAsset < totalRequired || currentAsset < item.cash) && months < 120) {
+      months++;
+      if (months <= 6) {
+        // 2026년 하반기 (7월 ~ 12월)
+        const mSum = monthlySum26H2[months - 1] || 0;
+        currentAsset += mSum;
+        savedIn26 += mSum;
+      } else if (months > 6 && months <= 18) {
+        // 2027년 (1월 ~ 12월)
+        const mSum = monthlySum27[months - 7] || 0;
+        currentAsset += mSum;
+        savedIn27 += mSum;
+      } else if (months > 18 && months <= 30) {
+        // 2028년
+        currentAsset += lastMonthRate27;
+        savedIn28 += lastMonthRate27;
+        final28Month = months - 18;
+      } else {
+        // 2029년 이후
+        currentAsset += lastMonthRate27;
+        savedIn29 += lastMonthRate27;
+        final29Month = months - 30;
+      }
+
+      if (months >= expiryMonth && !jeonseAdded) {
+        currentAsset += jeonseAmt;
+        jeonseAdded = true;
+      }
+    }
+
+    function getTargetDateStr(mCount) {
+      let year = 2026, month = 7 + mCount;
+      while (month > 12) { month -= 12; year += 1; }
+      return `${year}년 ${month}월`;
+    }
+
+    const finalDateStr = getTargetDateStr(months);
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="center bold">${item.price/10000}억</td>
+      <td>${(item.loan/10000).toFixed(1)}억</td>
+      <td class="bold" style="color:var(--primary-color)">${(item.cash/10000).toFixed(1)}억</td>
+      <td>${(item.extra).toLocaleString()}만</td>
+      <td class="center bold" style="color:var(--accent-color);">${finalDateStr} 예정</td>
+      <td class="center"><button class="btn-detail-toggle" onclick="toggleRowDetail(${item.price})">보기</button></td>
+    `;
+    simTbody.appendChild(tr);
+
+    const detailTr = document.createElement('tr');
+    detailTr.id = `detail-row-${item.price}`;
+    detailTr.className = `detail-row ${openDetailsMap[item.price] ? 'show' : ''}`;
+    detailTr.innerHTML = `
+      <td colspan="6" class="detail-cell">
+        <div class="calc-flow-box">
+          <strong>🏢 ${item.price/10000}억 주택 필요현금 상세 자산 구성 (${finalDateStr} 기준):</strong><br>
+          • 초기 부부 가용씨드(26.07): <strong>${initialTotalSeed.toLocaleString()}만원</strong><br>
+          • 2026년 하반기 누적 저축액: <strong>${savedIn26.toLocaleString()}만원</strong><br>
+          • 2027년 누적 저축액: <strong>${savedIn27.toLocaleString()}만원</strong><br>
+          ${savedIn28 > 0 ? `• 2028년 저축액(<strong>${final28Month}월까지</strong>): <strong>${savedIn28.toLocaleString()}만원</strong><br>` : ''}
+          ${savedIn29 > 0 ? `• 2029년 저축액(<strong>${final29Month}월까지</strong>): <strong>${savedIn29.toLocaleString()}만원</strong><br>` : ''}
+          • 전세보증금 반환(<strong>${jeonseDateStr}</strong>): <strong>${jeonseAdded ? jeonseAmt.toLocaleString() : '0'}만원</strong><br>
+          👉 <strong>확보 가능금액 총합: ${currentAsset.toLocaleString()}만원</strong>
+        </div>
+      </td>
+    `;
+    simTbody.appendChild(detailTr);
+  });
+}
+
+function shareToHusband() {
+  const p = new URLSearchParams();
+  p.set('ws', document.getElementById('wifeSeed').value);
+  p.set('hs', document.getElementById('husbandSeed').value);
+  p.set('cs', document.getElementById('commonSeed').value);
+  p.set('wj', document.getElementById('wifeJeonse').value);
+  p.set('hj', document.getElementById('husbandJeonse').value);
+  p.set('tj', document.getElementById('totalJeonse').value);
+  p.set('jd', document.getElementById('jeonseDate').value);
+  const shareUrl = `${window.location.origin}${window.location.pathname}?${p.toString()}`;
+  
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      alert("배우자에게 공유할 대시보드 주소가 복사되었습니다. 😉");
+    }).catch(() => {
+      prompt("아래 링크를 복사하여 공유하세요:", shareUrl);
+    });
+  } else {
+    prompt("아래 링크를 복사하여 공유하세요:", shareUrl);
+  }
+}
+
+document.addEventListener('input', function(e) {
+  if(e.target.tagName === 'INPUT') calculateTimeline();
+});
+
+// 초기화
+loadUrlParams();
+calculateTimeline();
+</script>
+</body>
+</html>
