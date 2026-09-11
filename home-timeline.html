@@ -110,19 +110,19 @@ td.bold { font-weight: 700; color: var(--text-color); }
   <div class="grid-2">
     <div class="form-group">
       <label>아내 지분</label>
-      <div class="input-suffix"><input type="number" id="wifeJeonse" value="2310"></div>
+      <div class="input-suffix"><input type="number" id="wifeJeonse" value="" placeholder="0"></div>
     </div>
     <div class="form-group">
       <label>남편 지분</label>
-      <div class="input-suffix"><input type="number" id="husbandJeonse" value="2310"></div>
+      <div class="input-suffix"><input type="number" id="husbandJeonse" value="" placeholder="0"></div>
     </div>
     <div class="form-group full">
       <label>전세 보증금 총액</label>
-      <div class="input-suffix"><input type="number" id="totalJeonse" value="4620" style="font-weight: bold; color: var(--accent-color);"></div>
+      <div class="input-suffix"><input type="number" id="totalJeonse" value="" placeholder="0" style="font-weight: bold; color: var(--accent-color);"></div>
     </div>
     <div class="form-group full">
       <label>전세 만기 및 자금 회수 시점</label>
-      <input type="text" id="jeonseDate" value="2028년 1월 30일" style="font-weight: bold; color: var(--primary-color);">
+      <input type="text" id="jeonseDate" value="" placeholder="예: 2028년 1월 30일" style="font-weight: bold; color: var(--primary-color);">
     </div>
   </div>
 </div>
@@ -299,13 +299,14 @@ document.getElementById('husbandJeonse').addEventListener('input', updateJeonseT
 function updateJeonseTotal() {
   const w = parseFloat(document.getElementById('wifeJeonse').value) || 0;
   const h = parseFloat(document.getElementById('husbandJeonse').value) || 0;
-  document.getElementById('totalJeonse').value = w + h;
+  document.getElementById('totalJeonse').value = (w + h) || '';
   calculateTimeline();
 }
 
 function parseExpiryMonth(dateStr) {
   const numbers = dateStr.match(/\d+/g);
-  if (!numbers || numbers.length < 2) return 18;
+  // 만기일이 없으면 회수 시점을 알 수 없으므로 시뮬레이션에 반영하지 않는다
+  if (!numbers || numbers.length < 2) return Infinity;
 
   let year = parseInt(numbers[0]);
   let month = parseInt(numbers[1]);
@@ -340,8 +341,9 @@ function brokerFee(price) {
   return Math.round(price * (price < 90000 ? 0.004 : 0.005) * 1.1);
 }
 
-// 7억, 8억~9억(1,000만원 단위), 10억
-const PRICE_POINTS = [70000];
+// 7억~8억(2,000만원 단위), 8억~9억(1,000만원 단위), 10억
+const PRICE_POINTS = [];
+for (let p = 70000; p < 80000; p += 2000) PRICE_POINTS.push(p);
 for (let p = 80000; p <= 90000; p += 1000) PRICE_POINTS.push(p);
 PRICE_POINTS.push(100000);
 
@@ -427,7 +429,7 @@ function calculateTimeline() {
 
   // 4. 전세 보증금 정보
   const jeonseAmt = parseFloat(document.getElementById('totalJeonse').value) || 0;
-  const jeonseDateStr = document.getElementById('jeonseDate').value || '만기일';
+  const jeonseDateStr = document.getElementById('jeonseDate').value || '만기일 미입력';
   const expiryMonth = parseExpiryMonth(jeonseDateStr);
 
   // 5. 시뮬레이션 계산
